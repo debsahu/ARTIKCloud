@@ -3,6 +3,7 @@
 #include <WiFiClientSecure.h>
 #include <Hash.h>
 #include <Ticker.h>
+#include "version.h"
 #include "secrets.h"
 
 /////////////////////// Edit this area to your liking //////////////////////////
@@ -759,6 +760,9 @@ void setup()
   server.on("/status", HTTP_GET, [&] {
     server.send(200, "application/json", sendStatusMsg());
   });
+  server.on("/version", HTTP_GET, [&] {
+    server.send(200, "application/json", SKETCH_VERSION);
+  });
   server.on("/restart", HTTP_GET, [&]() {
     Serial.println(F("/restart"));
     server.sendHeader("Access-Control-Allow-Origin", "*");
@@ -802,6 +806,9 @@ void setup()
   Serial.print(F("."));
   server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/plain", sendStatusMsg());
+  });
+  server.on("/version", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", SKETCH_VERSION);
   });
   Serial.print(F("."));
   server.on("/reset_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
