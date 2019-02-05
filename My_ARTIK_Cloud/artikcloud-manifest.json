@@ -1,0 +1,123 @@
+{
+  "fields": [
+    {
+      "name": "state",
+      "type": "STATE",
+      "valueClass": "String",
+      "isCollection": false,
+      "tags": [],
+      "isSensitive": false
+    },
+    {
+      "name": "level",
+      "type": "LEVEL",
+      "valueClass": "Double",
+      "isCollection": false,
+      "tags": [],
+      "isSensitive": false,
+      "unit": "NonSI.PERCENT"
+    },
+    {
+      "name": "colorRGB",
+      "children": [
+        {
+          "name": "g",
+          "unit": null,
+          "type": "COLOR_GREEN_COMPONENT",
+          "isCollection": false,
+          "valueClass": "Integer",
+          "children": null
+        },
+        {
+          "name": "b",
+          "unit": null,
+          "type": "COLOR_BLUE_COMPONENT",
+          "isCollection": false,
+          "valueClass": "Integer",
+          "children": null
+        },
+        {
+          "name": "r",
+          "unit": null,
+          "type": "COLOR_RED_COMPONENT",
+          "isCollection": false,
+          "valueClass": "Integer",
+          "children": null
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "setOn",
+      "description": "Set state to On",
+      "parameters": [],
+      "isStandard": true,
+      "type": "CUSTOM"
+    },
+    {
+      "name": "setOff",
+      "description": "Set state to Off",
+      "parameters": [],
+      "isStandard": true,
+      "type": "CUSTOM"
+    },
+    {
+      "name": "setColorRGB",
+      "description": "Set color",
+      "parameters": [
+        {
+          "name": "colorRGB",
+          "valueClass": null,
+          "children": [
+            {
+              "name": "green",
+              "type": "COLOR_GREEN_COMPONENT",
+              "valueClass": "Integer",
+              "children": null,
+              "unit": null,
+              "isCollection": false
+            },
+            {
+              "name": "blue",
+              "type": "COLOR_BLUE_COMPONENT",
+              "valueClass": "Integer",
+              "children": null,
+              "unit": null,
+              "isCollection": false
+            },
+            {
+              "name": "red",
+              "type": "COLOR_RED_COMPONENT",
+              "valueClass": "Integer",
+              "children": null,
+              "unit": null,
+              "isCollection": false
+            }
+          ],
+          "unit": null,
+          "isCollection": false
+        }
+      ],
+      "isStandard": true,
+      "type": "CUSTOM"
+    },
+    {
+      "name": "setLevel",
+      "description": "Set the level",
+      "parameters": [
+        {
+          "name": "level",
+          "valueClass": "Double",
+          "children": null,
+          "unit": "NonSI.PERCENT",
+          "isCollection": false,
+          "type": "CUSTOM"
+        }
+      ],
+      "isStandard": true,
+      "type": "CUSTOM"
+    }
+  ],
+  "messageFormat": "json"
+}
