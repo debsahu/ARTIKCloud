@@ -157,6 +157,7 @@ const uint8_t c_MaxBrightness = 255;
 #ifdef USE_NEOPIXELBUS
 RgbColor WHITE(color.r, color.g, color.b);
 RgbColor BLUE(0, 0, 64);
+RgbColor GREEN(0, 64, 0);
 RgbColor BLACK(0, 0, 0);
 #endif
 #if defined(ARDUINO_ESP8266_RELEASE_2_5_0_BETA2) or defined(ARDUINO_ESP8266_RELEASE_2_5_0_BETA3) or defined(ARDUINO_ESP8266_GIT_DESC)
@@ -628,6 +629,15 @@ void setup()
   Serial.println();
   Serial.println();
   Serial.println();
+#ifdef USE_NEOPIXELBUS
+  strip.Begin();
+  strip.ClearTo(BLUE);
+  strip.Show();
+#else
+  strip.begin();
+  setNeoPixels(0, 0, 64);
+#endif
+
   Serial.println(F("---------------------------"));
   Serial.println(F("Starting SPIFFs"));
   if (SPIFFS.begin())
@@ -719,12 +729,10 @@ void setup()
   Serial.println(WiFi.subnetMask());
 
 #ifdef USE_NEOPIXELBUS
-  strip.Begin();
-  strip.ClearTo(BLUE);
+  strip.ClearTo(GREEN);
   strip.Show();
 #else
-  strip.begin();
-  setNeoPixels(0, 0, 64);
+  setNeoPixels(0, 64, 0);
 #endif
 
   printFreeHeap();
