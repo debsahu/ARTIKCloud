@@ -1,12 +1,21 @@
+#ifdef ESP32
+#include <SPIFFS.h>
+#include <time.h> 
+#include <WiFi.h>
+#include <AsyncUDP.h>
+#include <Update.h>
+#elif defined(ESP8266)
 #include <FS.h>
 #include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
 #include <Hash.h>
+#endif
+#include <WiFiClientSecure.h>
 #include <Ticker.h>
 #include "version.h"
 #include "secrets.h"
 
 /////////////////////// Edit this area to your liking //////////////////////////
+#define PIN 3          //GPIO where WS2812B is connected
 #ifndef PIO_PLATFORM
 #define USE_PUBSUB      //uncomment if you want to use PubSubClient
 #define USE_WIFIMANAGER //uncomment if you want to use WiFiManager
@@ -30,26 +39,41 @@ int8_t TIME_ZONE = -5; //NYC(USA): -5 UTC
 #include <NeoPixelBrightnessBus.h> //https://github.com/Makuna/NeoPixelBus
 #else
 #include <Adafruit_NeoPixel.h> //https://github.com/adafruit/Adafruit_NeoPixel
-#define PIN 3
 #endif
 
 #include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson/releases/download/v6.8.0-beta/ArduinoJson-v6.8.0-beta.zip
 #ifdef USE_ASYNC_WEBSERVER
-#include <ESPAsyncTCP.h>
-#include <ESPAsyncWebServer.h> //https://github.com/me-no-dev/ESPAsyncWebServer
+  #if (defined(ESP32) and defined(USE_ASYNC_WEBSERVER))
+    #include <AsyncTCP.h> //https://github.com/me-no-dev/AsyncTCP
+  #elif (defined(ESP8266) and defined(USE_ASYNC_WEBSERVER))
+    #include <ESPAsyncTCP.h>
+  #endif
+    #include <ESPAsyncWebServer.h> //https://github.com/me-no-dev/ESPAsyncWebServer
 #else
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
+  #if (defined(ESP32) and !defined(USE_ASYNC_WEBSERVER))
+    #include <WebServer.h>
+  #elif (defined(ESP8266) and !defined(USE_ASYNC_WEBSERVER))
+    #include <ESP8266WebServer.h>
+    #include <ESP8266HTTPUpdateServer.h>
+  #endif
 #include <WebSocketsServer.h> //https://github.com/Links2004/arduinoWebSockets
 #endif
+
 #include "indexhtml.h"
-#if (defined(USE_WIFIMANAGER) and defined(USE_ASYNC_WEBSERVER))
-#include <ESPAsyncDNSServer.h> //https://github.com/devyte/ESPAsyncDNSServer
-#include <ESPAsyncUDP.h>
-#include <ESPAsyncWiFiManager.h> //https://github.com/alanswx/ESPAsyncWiFiManager
-AsyncDNSServer dns;
-#elif (defined(USE_WIFIMANAGER) and !defined(USE_ASYNC_WEBSERVER))
+
+#if defined(USE_ASYNC_WEBSERVER) and defined(USE_WIFIMANAGER)
+  #include <ESPAsyncWiFiManager.h> //https://github.com/alanswx/ESPAsyncWiFiManager
+#elif defined(USE_WIFIMANAGER)
   #include <WiFiManager.h> //https://github.com/tzapu/WiFiManager
+#endif
+
+#if (defined(ESP32) and defined(USE_ASYNC_WEBSERVER) and defined(USE_WIFIMANAGER))
+  #include <DNSServer.h>
+  DNSServer dns;
+#elif (defined(ESP8266) and defined(USE_ASYNC_WEBSERVER) and defined(USE_WIFIMANAGER))
+  #include <ESPAsyncDNSServer.h> //https://github.com/devyte/ESPAsyncDNSServer
+  #include <ESPAsyncUDP.h>
+  AsyncDNSServer dns;
 #endif
 
 #ifdef ARDUINO_ESP8266_RELEASE_2_4_2
@@ -113,8 +137,11 @@ uint8_t DST = 1;
 uint8_t DST = 0;
 #endif
 
-#ifdef USE_NEOPIXELBUS
-NeoPixelBrightnessBus<NeoGrbFeature, NeoEsp8266Dma800KbpsMethod> strip(PixelCount); // Use RX Pin on ESP8266
+#if (defined(ESP32) and defined(USE_NEOPIXELBUS))
+NeoPixelBrightnessBus<NeoGrbFeature, NeoEsp32BitBangWs2813Method> strip(PixelCount, PIN); // Use PIN on ESP32
+NeoGamma<NeoGammaTableMethod> colorGamma;
+#elif (defined(ESP8266) and defined(USE_NEOPIXELBUS))
+NeoPixelBrightnessBus<NeoGrbFeature, NeoEsp8266Dma800KbpsMethod> strip(PixelCount); // Use GPIO3/RX Pin on ESP8266
 NeoGamma<NeoGammaTableMethod> colorGamma;
 #else
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PixelCount, PIN, NEO_GRB + NEO_KHZ800);
@@ -122,6 +149,9 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(PixelCount, PIN, NEO_GRB + NEO_KHZ80
 #ifdef USE_ASYNC_WEBSERVER
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+#elif defined(ESP32) and !defined(USE_ASYNC_WEBSERVER)
+WebServer server(80);
+WebSocketsServer webSocket = WebSocketsServer(81);
 #else
 ESP8266WebServer server(80);
 ESP8266HTTPUpdateServer httpUpdater;
@@ -621,6 +651,45 @@ void messageReceived(String &topic, String &payload)
   }
 }
 
+#ifdef ESP32
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
+    Serial.printf("Listing directory: %s\n", dirname);
+
+    File root = fs.open(dirname);
+    if(!root){
+        Serial.println("Failed to open directory");
+        return;
+    }
+    if(!root.isDirectory()){
+        Serial.println("Not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while(file){
+        if(file.isDirectory()){
+            Serial.print("  DIR : ");
+            Serial.print (file.name());
+            time_t t= file.getLastWrite();
+            struct tm * tmstruct = localtime(&t);
+            Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n",(tmstruct->tm_year)+1900,( tmstruct->tm_mon)+1, tmstruct->tm_mday,tmstruct->tm_hour , tmstruct->tm_min, tmstruct->tm_sec);
+            if(levels){
+                listDir(fs, file.name(), levels -1);
+            }
+        } else {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("  SIZE: ");
+            Serial.print(file.size());
+            time_t t= file.getLastWrite();
+            struct tm * tmstruct = localtime(&t);
+            Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n",(tmstruct->tm_year)+1900,( tmstruct->tm_mon)+1, tmstruct->tm_mday,tmstruct->tm_hour , tmstruct->tm_min, tmstruct->tm_sec);
+        }
+        file = root.openNextFile();
+    }
+}
+#endif
+
 #include "WSServerHelper.h"
 
 void setup()
@@ -642,6 +711,9 @@ void setup()
   Serial.println(F("Starting SPIFFs"));
   if (SPIFFS.begin())
   {
+    #ifdef ESP32
+    listDir(SPIFFS, "/", 0);
+    #elif defined(ESSP8266)
     Dir dir = SPIFFS.openDir("/");
     while (dir.next())
     {
@@ -659,6 +731,7 @@ void setup()
       Serial.println(F("SPIFFs started"));
       Serial.println(F("---------------------------"));
     }
+    #endif
   }
   if (readStateFS())
     Serial.println(F(" yay!"));
@@ -671,7 +744,12 @@ void setup()
   else
     writeConfigFS();
 
-  WiFi.hostname(HOSTNAME);
+  WiFi.mode(WIFI_STA);
+#ifdef ESP32
+  WiFi.setHostname(HOSTNAME);
+#else
+  WiFi.hostname(HOSTNAME); 
+#endif
 #if defined(USE_WIFIMANAGER) and defined(USE_ASYNC_WEBSERVER)
   AsyncWiFiManager wm(&server, &dns);
   AsyncWiFiManagerParameter custom_user("user", "ARTIK USERNAME", mqttCloudUsername, 40);
@@ -695,8 +773,6 @@ void setup()
   strcpy(mqttCloudUsername, custom_user.getValue());
   strcpy(mqttCloudPassword, custom_pass.getValue());
 #else
-  WiFi.mode(WIFI_STA);
-  WiFi.hostname(HOSTNAME);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   Serial.print(F("Connecting to "));
   Serial.print(F(WIFI_SSID));
@@ -734,9 +810,10 @@ void setup()
 #else
   setNeoPixels(0, 64, 0);
 #endif
-
   printFreeHeap();
-
+#ifdef ESP32
+  net.setCACert(cacert);
+#endif
 #ifdef ARDUINO_ESP8266_RELEASE_2_4_2
   writeCAFS();
   File ca = SPIFFS.open("/ca.crt", "r");
@@ -797,7 +874,36 @@ void setup()
     shouldReboot = true;
   });
   server.onNotFound(handleNotFound);
+#if !defined(USE_ASYNC_WEBSERVER) and defined(ESP32)
+  server.on("/update", HTTP_POST, []() {
+    server.sendHeader("Connection", "close");
+    server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
+    ESP.restart();
+  }, []() {
+    HTTPUpload& upload = server.upload();
+    if (upload.status == UPLOAD_FILE_START) {
+      Serial.setDebugOutput(true);
+      Serial.printf("Update: %s\n", upload.filename.c_str());
+      if (!Update.begin()) { //start with max available size
+        Update.printError(Serial);
+      }
+    } else if (upload.status == UPLOAD_FILE_WRITE) {
+      if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+        Update.printError(Serial);
+      }
+    } else if (upload.status == UPLOAD_FILE_END) {
+      if (Update.end(true)) { //true to set the size to the current progress
+        Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+      } else {
+        Update.printError(Serial);
+      }
+      Serial.setDebugOutput(false);
+    }
+  });
+#endif
+#if !defined(USE_ASYNC_WEBSERVER) and defined(ESP8266) 
   httpUpdater.setup(&server);
+#endif
 #else
   Serial.print(F("Async HTTP server starting "));
   ws.onEvent(onWsEvent);

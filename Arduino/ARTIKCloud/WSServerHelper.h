@@ -207,8 +207,13 @@ void processUpdate(AsyncWebServerRequest *request, String filename, size_t index
   if (!index)
   {
     Serial.printf("Update Start: %s\n", filename.c_str());
-    Update.runAsync(true);
-    if (!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000))
+#ifdef ESP32
+    uint32_t maxSketchSpace = len; // for ESP32 you just supply the length of file
+#elif defined(ESP8266)
+    Update.runAsync(true); // There is no async for ESP32
+    uint32_t maxSketchSpace = ((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000);
+#endif
+    if(!Update.begin(maxSketchSpace))
     {
       Update.printError(Serial);
     }
