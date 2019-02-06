@@ -8,6 +8,8 @@
 #include <FS.h>
 #include <ESP8266WiFi.h>
 #include <Hash.h>
+#else
+#error "Platform not supported"
 #endif
 #include <WiFiClientSecure.h>
 #include <Ticker.h>
@@ -127,8 +129,12 @@ j6tJLp07kzQoH3jOlOrHvdPJbRzeXDLz
 )EOF";
 /**/
 ///// End ARTIK Stuff /////
-#if (ARDUINOJSON_VERSION_MAJOR == 6 and ARDUINOJSON_VERSION_MINOR != 8)
-#error "Install ArduinoJson v6.8.0-beta" ///// Install correct version of ArduinoJSON /////
+#if (ARDUINOJSON_VERSION_MAJOR == 6 and ARDUINOJSON_VERSION_MINOR == 8)
+// ArduinoJson v6.8.0-beta
+#elif (ARDUINOJSON_VERSION_MAJOR == 5 and ARDUINOJSON_VERSION_MINOR == 13)
+// ArduinoJson v5.13.xx
+#else
+#error "Install ArduinoJson v6.8.0-beta or v5.13.3" ///// Install correct version of ArduinoJSON /////
 #endif
 
 #ifdef USE_SUMMER_TIME_DST
