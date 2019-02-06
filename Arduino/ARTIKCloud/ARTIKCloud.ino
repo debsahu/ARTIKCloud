@@ -18,15 +18,16 @@
 
 /////////////////////// Edit this area to your liking //////////////////////////
 #define PIN 3          //GPIO where WS2812B is connected
-#ifndef PIO_PLATFORM
-#define USE_PUBSUB      //uncomment if you want to use PubSubClient
-#define USE_WIFIMANAGER //uncomment if you want to use WiFiManager
-#define USE_ASYNC_WEBSERVER
-#endif
+
 #ifndef SECRET
+#ifndef PIO_PLATFORM
+  #define USE_PUBSUB      //uncomment if you want to use PubSubClient
+  #define USE_WIFIMANAGER //uncomment if you want to use WiFiManager
+  #define USE_ASYNC_WEBSERVER
+#endif
 #ifndef USE_WIFIMANAGER
-#define WIFI_SSID "WIFISSID"
-#define WIFI_PASS "WIFIPASSWORD"
+  #define WIFI_SSID "WIFISSID"
+  #define WIFI_PASS "WIFIPASSWORD"
 #endif
 
 char mqttCloudUsername[40] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
