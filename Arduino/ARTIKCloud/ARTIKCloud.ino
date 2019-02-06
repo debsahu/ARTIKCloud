@@ -227,10 +227,13 @@ String sendStatusMsg(bool ARTIKCloud = false)
       root["state"] = "ON";
     else
       root["state"] = "OFF";
+    root["level"] = (int8_t) level/2.55;
   }
   else
+  {
     root["state"] = stateOn;
-  root["level"] = level;
+    root["level"] = level;
+  }
 #if ARDUINOJSON_VERSION_MAJOR == 6
   JsonObject colorRGB = root.createNestedObject("colorRGB");
 #else
@@ -632,7 +635,7 @@ void messageReceived(String &topic, String &payload)
     }
     if (strcmp(actions_name, "setLevel") == 0)
     {
-      level = map((uint8_t)root["actions"][0]["parameters"]["level"], 0, 255, c_MinBrightness, c_MaxBrightness);
+      level = map((uint8_t)root["actions"][0]["parameters"]["level"], 0, 100, c_MinBrightness, c_MaxBrightness);
     }
     if (strcmp(actions_name, "setColorRGB") == 0)
     {
@@ -921,6 +924,7 @@ void setup()
   server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/plain", sendStatusMsg());
   });
+  Serial.print(F("."));
   server.on("/version", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/plain", SKETCH_VERSION);
   });
