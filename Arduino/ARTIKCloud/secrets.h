@@ -1,9 +1,9 @@
 #include <pgmspace.h>
 
 #ifndef PIO_PLATFORM
-  #define USE_PUBSUB      //uncomment if you want to use PubSubClient
-  #define USE_WIFIMANAGER //uncomment if you want to use WiFiManager
-  #define USE_ASYNC_WEBSERVER
+  #define USE_PUBSUB             //uncomment if you want to use PubSubClient
+  #define USE_WIFIMANAGER        //uncomment if you want to use WiFiManager
+  #define USE_ASYNC_WEBSERVER    //comment if you want to use inbuilt web-server
 #endif
 
 #define SECRET
