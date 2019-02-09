@@ -36,11 +36,13 @@ An application made for ESP8266 to comunicate with ARTIK Cloud
 
 ## ESP32
 
-Can be done easily, leave an issue open to address this.
+Check this [issue](https://github.com/debsahu/ARTIKCloud/issues/1) for latest progress.
 
-# Hadrware
+# Hardware
 
 - Connect 5V to + of WS2812B and VIN of NodeMCU or voltage regulator in of your favorite ESP8266 board
-- Connect GND to GND of WS2812B and ESP8266
+- Connect GND to GND of WS2812B and ESP device
 - Connect GPIO3/RX pin of ESP8266 to WS2812B
 - Attach at least a 1000μF capacitor between 5V and GND near the first LED
+
+![hardware](https://github.com/debsahu/ARTIKCloud/blob/master/doc/harware.png)
