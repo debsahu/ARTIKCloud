@@ -13,6 +13,9 @@ An application made for ESP8266 to comunicate with ARTIK Cloud
 
 [![ARTIKCloud](https://img.youtube.com/vi/xxxxxxxx/0.jpg)](https://www.youtube.com/watch?v=xxxxxxxx)
 
+## ARTIK Cloud Instructions
+
+[Follow instructions](https://github.com/debsahu/ARTIKCloud/tree/master/doc/README.md)
 
 ## Libraries Needed
 
