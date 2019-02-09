@@ -11,7 +11,7 @@ An application made for ESP8266 to comunicate with ARTIK Cloud
 
 ## YouTube
 
-[![ARTIKCloud](https://img.youtube.com/vi/xxxxxxxx/0.jpg)](https://www.youtube.com/watch?v=xxxxxxxx)
+[![ARTIKCloud](https://img.youtube.com/vi/baNO_8L5-RY/0.jpg)](https://www.youtube.com/watch?v=baNO_8L5-RY)
 
 ## ARTIK Cloud Instructions
 
