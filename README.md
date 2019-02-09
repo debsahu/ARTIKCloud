@@ -45,4 +45,4 @@ Check this [issue](https://github.com/debsahu/ARTIKCloud/issues/1) for latest pr
 - Connect GPIO3/RX pin of ESP8266 to WS2812B
 - Attach at least a 1000μF capacitor between 5V and GND near the first LED
 
-![hardware](https://github.com/debsahu/ARTIKCloud/blob/master/doc/harware.png)
+![hardware](https://github.com/debsahu/ARTIKCloud/blob/master/doc/hardware.png)
