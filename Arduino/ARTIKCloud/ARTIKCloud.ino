@@ -723,7 +723,7 @@ void setup()
   {
     #ifdef ESP32
     listDir(SPIFFS, "/", 0);
-    #elif defined(ESSP8266)
+    #elif defined(ESP8266)
     Dir dir = SPIFFS.openDir("/");
     while (dir.next())
     {
